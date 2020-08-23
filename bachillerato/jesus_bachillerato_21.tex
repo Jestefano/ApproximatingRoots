@@ -1,0 +1,1130 @@
+\documentclass[oneside,11pt]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{CJKutf8}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[spanish]{babel}  
+\usepackage[spanish,onelanguage]{algorithm2e}
+\selectlanguage{spanish} 
+\decimalpoint
+\usepackage[style=alphabetic]{biblatex}
+\usepackage{csquotes}
+\usepackage[bottom]{footmisc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{mathrsfs}
+\usepackage{subfiles}
+\usepackage{tikz-cd}
+\usetikzlibrary{babel}
+
+\addbibresource{ref.bib}
+
+\newtheorem{counter}{Contador}[chapter]
+
+\theoremstyle{definition}
+\newtheorem*{preliminaries}{Preliminares}
+\newtheorem*{definition}{Definición}
+\newtheorem*{notation}{Notación}
+\newtheorem*{example}{Ejemplo}
+\newtheorem*{commentary}{Comentario}
+
+\theoremstyle{plain}
+\newtheorem{proposition}[counter]{Proposición}
+\newtheorem{lemma}[counter]{Lema}
+\newtheorem{theorem}[counter]{Teorema}
+\newtheorem{corollary}[counter]{Corolario}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Observación}
+
+\newcommand{\eop}{\hfill$\square$}    
+\renewcommand \baselinestretch {1.2}
+
+\addto \captionsspanish {\renewcommand{\proofname}{Prueba}}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+
+
+\Large \textsf{\textbf{PONTIFICIA UNIVERSIDAD CATÓLICA DEL PERÚ}}
+
+\vspace*{0.5cm}
+
+\large \textsf{\textbf{FACULTAD DE CIENCIAS E INGENIERÍA}}
+
+\vspace*{2cm}
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=12cm]{logo.png}\\
+\end{center}
+\end{figure}
+
+\vspace*{1cm}
+
+\Large \textsf{\textbf{Factorizaci\'on de polinomios con din\'amica compleja}}
+
+\vspace*{0.5cm}
+
+\textsf{\textbf{TRABAJO DE INVESTIGACIÓN PARA LA OBTENCIÓN DEL GRADO DE BACHILLER 
+EN CIENCIAS CON MENCIÓN EN 
+MATEMÁTICAS}}
+
+\vspace*{1.5cm}
+
+\textsf{\textbf{AUTOR}} 
+
+\vspace*{0.3cm}
+
+\textsf{Jes\'us Stefano Torres Romero}
+
+\vspace*{1.5cm}
+
+\textsf{\textbf{ASESOR}}
+
+\vspace*{0.3cm}
+
+\textsf{Alfredo Bernardo Poirier Schmitz}
+
+\vspace*{2cm}
+
+\textsf{Lima, julio 2020}
+
+\end{center}
+\newpage
+
+\tableofcontents
+
+
+\chapter{Introducci\'on}
+
+En matem\'aticas modernas, 
+la teor\'ia de sistemas din\'amicos complejos ha sido un \'area muy activa por los \'ultimos cuarenta años \cite{Milnor}. 
+
+El prop\'osito de esta tesina es utilizar m\'etodos elementales de iteraci\'on de funciones cuadr\'aticas a un problema concreto:
+factorizar polinomios de coeficientes reales.
+Ver \cite{PoirierRoots}.
+
+Con la finalidad de motivar el objeto de estudio, 
+supongamos que nos interesa factorizar el polinomio $p(x)=x^3-x^2-2x$ en t\'erminos lineales.
+Por supuesto, este es el mismo problema que encontrar sus ra\'ices; 
+y somos conscientes de que tales ra\'ices son $0$, $-1$ y $2$.
+Cada una de estas ra\'ices $\alpha$ puede ser enmaracada en un proceso de iteraci\'on de la forma $z \mapsto z^2$.
+En cada uno de estos tres casos la iteraci\'on se har\'a con semilla $z_0=\alpha$. 
+La raz\'on detr\'as de esta elecci\'on se har\'a clara en su momento. 
+
+De esta manera, para $\alpha=0$ obtenemos la \'orbita estacionaria 
+$$
+0 \mapsto 0 \mapsto 0 \mapsto 0 \mapsto \dots.
+$$
+Por otro lado, para $\alpha=-1$ se logra un proceso eventualmente constante
+$$
+-1 
+\mapsto 1 \mapsto 1 \mapsto 1 \mapsto 1 \mapsto 1\dots.  
+$$
+Por su parte, para $\alpha=2$ tenemos 
+$$
+2 \mapsto 4\mapsto 16\mapsto 256\mapsto \dots, 
+$$
+una iteraci\'on en apariencia un tanto menos regular. 
+Podemos observar 
+(y tambi\'en se puede probar rigurosamente) 
+que la \'orbita de $\alpha=2$ crece mucho m\'as r\'apido que las otras dos.
+La pregunta se convierte entonces en c\'omo aprovechar este hecho en nuestro beneficio.
+
+La idea consiste en lo siguiente.  
+Como ---supuestamente--- en la vida real no conocemos las ra\'ices de antemano, 
+llamemos $\alpha$ a una ra\'iz arbitraria, con \'enfasis as\'i en su caracter de inc\'ognita. 
+Al ponerlas todas juntas iniciamos la iteraci\'on que se mencion\'o previamente, 
+la misma que ahora toma la forma $z\mapsto z^2$, igualmente con semilla $\alpha$. 
+N\'otese que esta iteraci\'on, a pesar de estar escrita con un $z=\alpha$ desconocido, 
+carga informaci\'on de las tres ra\'ices en paralelo.
+
+De esta manera obtenemos la siguiente secuencia de polinomios
+$$
+z \mapsto z^2 \mapsto z^4 \mapsto z^8 \mapsto z^{16} \mapsto \dots.
+$$  
+En un principio parece que el grado de estos polinomios crece sin control,
+pero este no es el caso.
+Recordemos que $z$ representa una ra\'iz arbitraria de $p(x)$
+(o, equivalentemente, a todas las ra\'ices de $p(x)$ a la vez), 
+detalle inseparable de $p(x)=0$.
+
+En otras palabras, podemos efectuar esta iteraci\'on m\'odulo $p$ o,
+formalmente, seguir el proceso en el anillo cociente
+$\mathbb{R}[x]/\negmedspace<\negmedspace p(x)\negmedspace >$.
+Con ello tenemos
+$$
+x \mapsto x^2 \mapsto 3x^2+2x \mapsto 43x^2+42x \mapsto 10923x^2+10922x\mapsto 715827883x^2+715827882x\mapsto\dots,
+$$
+con expresiones de grado a lo mucho 2.
+Por supuesto, si reemplazamos $x=0,-1,2$ recuperamos las sucesiones mostradas p\'arrafos atr\'as.
+
+Podemos transformar el polinomio $10923x^2+10922x$ en un polinomio m\'onico sin alterar las ra\'ices.
+Al dividir entre el t\'ermino l\'ider obtenemos  
+$x^2+0.99990845005951x$, 
+un polinomio con ra\'ices (aproximadas) $0$ y $-1$.
+Estas son las dos ra\'ices ---del polinomio original--- con \'orbita acotada (es decir, que al iterar no tienden a infinito).
+Al pasar al siguiente nivel de iteraci\'on obtenemos el polinomio 
+$x^2+0.99999999860302x$, 
+y observamos que conforme avanzamos en la iteraci\'on nos acercamos m\'as y m\'as a las ra\'ices del polinomio original.
+
+Podemos apreciar que el polinomio anterior mantiene exclusivamente dos ra\'ces del polinomio original. 
+Con ello, cabe preguntarse d\'onde se esfum\'o la tercera.
+La respuesta es clara, podemos aventurarnos a decir que se perdi\'o en el proceso de iteraci\'on.
+Sin embargo, recuperar dicha ra\'iz a partir del polinomio inicial y su factor perseverante es rutinario 
+v\'ia m\'etodos elementales.
+
+El motivo de esta tesina es, primero, 
+entender lo que se esconde detr\'as de este fen\'omeno  y, 
+segundo, 
+aplicar este m\'etodo para polinomios arbitrarios, es decir, de ra\'ices desconocidas.
+L\'ogicamente, en el camino habr\'a que mencionar 
+qu\'e ocurre con casos especiales donde el m\'etodo pueda fallar o tornarse ineficiente. 
+
+Esta tesis se divide en las siguientes secciones.
+En el segundo cap\'itulo 
+definimos los conceptos de din\'amica compleja necesarios para poder desarrollar el algoritmo. 
+En el tercer cap\'itulo 
+explicamos c\'omo estas ideas se entrelazan en el algoritmo de factorizaci\'on que desarrollamos v\'ia ejemplos.
+En el cuarto cap\'itulo 
+proponemos un pseudo-c\'odigo de las ideas previamente discutidas.
+En el quinto y \'ultimo cap\'itulo 
+listamos posibles complicaciones derivadas del hecho de que solo hemos atacado polinomios gen\'ericos. 
+\bigskip
+
+\chapter{Preliminares t\'ecnicos}
+
+En este cap\'itulo nos centraremos en definir conceptos y enunciar ejemplos que nos servir\'an de base 
+para la construcci\'on del algoritmo.
+Adem\'as, estas definiciones permitir\'an tratar temas de convergencia y velocidad de la misma. 
+Para una explicaci\'on m\'as a fondo de estos temas, nos referimos a \cite{Carleson}, \cite{PoirierPolinomios}, \cite{Lang}.
+
+Sea $\alpha$ un numero complejo.
+En este trabajo, 
+la \textbf{\'orbita} de $\alpha$, denotada $\mathcal{O}_\alpha$, 
+se define como el conjunto de elementos que 
+son resultado de la iteraci\'on $z\mapsto z^2$ iniciada desde $z_0=\alpha$; 
+alguna veces incluso se presentar\'a \'este como un conjunto ordenado. 
+
+Veamos algunos ejemplos de \'orbitas. 
+En el cap\'itulo anterior exhibimos tres de ellas: 
+$\mathcal{O}_{-1}=\{-1,1\}$, $\mathcal{O}_0=\{0\}$ y $\mathcal{O}_2=\{0,2,4,16,\dots\}$. 
+Se puede apreciar que algunas \'orbitas son acotadas, mientras otras, no.
+Esta \'ultima observaci\'on resulta extremadamente relevante para nuestros objetivos.
+
+Con los ejemplos anteriores podemos apreciar que la \'orbita de $0$ tiende a $0$.
+Por otro lado, la \'orbita de $-1$ mantiene norma $1$, 
+mientras que la de $-2$ tiende a infinito.
+En realidad, el comportamiento de estas \'orbitas se puede generalizar a partir de los tres casos aislados ya mencionados. 
+Esto lo enunciaremos en el siguiente teorema.
+
+\begin{theorem}
+Si $\alpha$ tiene norma menor que $1$, entonces $\mathcal{O}_\alpha$ se mantiene acotado por $1$. 
+Si $\alpha$ tiene norma $1$, entonces los elementos de $\mathcal{O}_\alpha$ tienen todos norma 1. 
+Finalmente, si $|\alpha|>1$, entonces los elementos de $\mathcal{O}_\alpha$ tienden a infinito.
+\end{theorem}
+\begin{proof}
+Sea $\alpha$ el n\'umero complejo en cuesti\'on.
+
+Si $|\alpha|$ es menor a 1, de 
+$0\leq| \alpha |<1$ se pasa a $0\leq |\alpha|^n<1^n=1$. 
+En efecto, claramente se tiene $|\alpha|^n>|\alpha|^{n+1}>\dots$, 
+y con ello obtenemos una sucesi\'on decreciente, por tanto convergente. 
+De la propiedad arquimideana de los reales se concluye que el l\'imite solo puede ser $0$. 
+
+Si $|\alpha|=1$, se tiene $|\alpha|^n=1$; esta vez, sin embargo, la secuencia no tiene por qu\'e tener l\'imite. 
+
+Si $|\alpha|>1$, el proceso de iteraci\'on genera una sucesi\'on creciente (en valor absoluto) sin cota superior. 
+\end{proof}
+
+Enunciamos un corolario inmediato que nos ser\'a de utilidad al desarrollar el algoritmo.
+
+\begin{theorem}\label{escape}
+Un n\'umero $\alpha$ es acotado por 1 
+si y solo si su \'orbita $\mathcal{O}_\alpha$ es acotada por $1$.\eop
+\end{theorem}
+
+Denotaremos como $\overline{{\mathbb{D}}}$ al conjunto de los $x\in \mathbb{C}$ acotados por 1.
+
+Adem\'as de las propiedades ya mencionadas, 
+es importante resaltar que $\overline{{\mathbb{D}}} $ es conexo y compacto. 
+
+Para nosotros m\'as importante que $\overline{{\mathbb{D}}}$ es su complemento.
+En ese sentido, el teorema \ref{escape} es de gran inter\'es,
+ya que en este proceso de iteraci\'on no hay manera de salir de la bola de radio 1 para luego retornar.
+
+
+Ahora notemos un detalle interesante. 
+Dada la naturaleza de la iteraci\'on
+tenemos que el $k$-\'esimo iterado de $\alpha$
+tiene forma expl\'icita $\alpha^{2^k}$, 
+y si $\alpha$ no pertenece a $\overline{\mathbb{D}}$ ello es s\'intoma de que $\alpha$ se aleja a ritmo exponencial 
+del c\'irculo unitario.
+
+Este comentario apunta al hecho de que m\'as que la ``coordenada de escape", 
+nos interesa la lejan\'ia de un punto respecto a $\mathbb{D}$. 
+Ello tendr\'a el efecto de que, de tener dos \'orbitas a mano, sabremos cu\'al crece m\'as r\'apido que la otra. 
+
+Para evitar inconvenientes notacionales, recurriremos a $\phi(\alpha)$ 
+para referirnos al valor absoluto 
+(en principio desconocido) de las ra\'ices del polinomio $p$ cuyo meta es factorizar. 
+(El valor absoluto expl\'icito $|\cdot |$  ser\'a utilizado para otros fines.)
+De este modo, la funci\'on $\phi(\cdot)$ es estrictamente mayor que 1 
+para elementos fuera de $\overline{\mathbb{D}}$. 
+
+Durante este trabajo denotaremos como ${f^{\circ k}(\alpha)}$ a la $k$-\'esima iteraci\'on de $\alpha$. 
+Normalmente lo usaremos en conjunci\'on con $\phi$ con fines comparativos. 
+Los  tecnicismos se detallan a continuaci\'on. 
+\medskip
+
+\begin{lemma}
+Si se cumple $\phi(\alpha)>\phi(\beta)$, 
+entonces existe $\lambda<1$ tal que, para $k$ grande, 
+el cociente $\displaystyle{\frac{f^{\circ k}(\beta)}{f^{\circ k}(\alpha)}}$ es menor que $\lambda^{2^k}$. 
+\end{lemma}
+\begin{proof}
+Si $\beta=0$, se cumple de manera trivial la conclusi\'on.
+De otro modo, de la hip\'otesis podemos escoger $r >1$ sujeto a 
+$\displaystyle{\left |\frac{\phi(\alpha)}{\phi(\beta)}\right|> r>1}$.
+Con ello, concluimos ${f^{\circ k}(\alpha)}/{f^{\circ k}(\beta)}=|{\alpha}/{\beta}|^{2^k}>r^{2^k}>1$.
+Para confirmar el lema basta elegir $\lambda = {1}/{r}$.
+\end{proof}
+\bigskip
+
+\chapter{Discusi\'on mediante ejemplos}
+
+Digamos que tenemos un polinomio arbitrario $p(x)$ de grado $n$ que queremos factorizar. 
+Como se hizo en la introducci\'on, 
+empezaremos la iteraci\'on de todas sus ra\'ices $c_1,\dots,c_n$ de manera simult\'anea.
+En esencia, en este proceso pueden suceder tres cosas. 
+Puede existir una ra\'iz que lidera la iteraci\'on 
+(su $\phi(c)$ es mayor a las dem\'as), en cuyo caso la llamaremos {\bf ra\'iz liebre}; 
+pueden existir m\'ultiples ra\'ices que lideran 
+(existe un empate en el m\'aximo $\phi$, por ejemplo en el caso de ra\'ices complejas conjugadas) y, 
+por ultimo, ninguna ra\'iz escapa (todas las ra\'ices permanecen en $\overline{\mathbb{D}}$). 
+
+En principio, el algoritmo se centrar\'a en hacer que se esfume la ra\'iz l\'ider 
+(al final su valor se recuperar\'a mediante m\'etodos algebraicos elementales). 
+En caso se desee factorizar el polinomio completamente se aplicar\'a el algoritmo sucesivas veces,
+una vez por ra\'iz o par de ra\'ices hasta que al final quede apenas una.
+\medskip
+
+Empezaremos con el caso de una ra\'iz l\'ider, 
+seguiremos con todas las ra\'ices en $\overline{\mathbb{D}}$ y 
+finalizaremos con el caso de varias ra\'ices con un mismo equipotencial 
+(con mismo $\phi(\cdot)$) mayor a $1$.
+\medskip
+
+\section{Una ra\'iz liebre}
+
+Empecemos con un ejemplo:  
+tomemos el polinomio $p(x)=x^3-29.0443x^2+81.30831522x+1133.2465629685$.
+Desplegaremos en cada estad\'io del proceso el polinomio $f^{\circ k}(x)$, resultado de la iteraci\'on; 
+sus coeficientes est\'an se\~nalados como $b_{kj}$. 
+Por temas de argumentaci\'on,
+exhibiremos adem\'as el m\'ultiplo m\'onico de $f^{\circ k}(x)$. 
+Este polinomio ser\'a denotado por $\hat{f^{\circ k}}(x)$; 
+fruto de esta normalizaci\'on, nos referiremos a  sus coeficientes por $d_{kj}$.
+
+\begin{center}
+\begin{tabular}{ |c | l | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$ & $\hat{f}^{\circ k}(x)$\\
+ \hline 
+& $b_{10}= 0$ & $d_{10}= 0 $\\
+1 & $b_{11}= 1$ &$d_{11}=1 $  \\ 
+& $b_{12}= 0$ & $d_{12}=0$\\  
+ \hline 
+& $b_{20}= 0$ & $d_{20}= 0 $\\
+2 & $b_{21}= 0$ & $d_{21}=0 $  \\ 
+& $b_{22}= 1$ & $d_{22}=1$\\
+\hline
+& $b_{30}= -32914.353148826005$ & $d_{30}= -43.1797832345 $\\
+3 & $b_{31}= -3494.789662712746$ & $d_{31}=-4.5847554532 $  \\ 
+& $b_{32}= 762.26304727$ & $d_{32}=1$\\
+\hline
+& $b_{40}= -12003542006.017382$ & $d_{40}= -47.9760189792 $\\
+4 & $b_{41}= -1367370000.9030244$ & $d_{41}=-5.465134298 $  \\ 
+& $b_{42}= 250198792.25954336$ & $d_{42}=1$\\
+\hline
+& $b_{50}= -1.1409351502437125*10^{21}$ & $d_{50}= -48.1255918622 $\\
+5 & $b_{51}= -1.3031181570888432*10^{20}$ & $d_{51}=-5.4966605738 $  \\ 
+& $b_{52}= 2.370745181713784*10^{19}$ & $d_{52}=1$\\
+\hline
+& $b_{60}= -1.0195542032508078*10^{43}$ & $d_{60}= -48.1257776997 $\\
+6 & $b_{61}= -1.1644868627192711*10^{42}$ & $d_{61}=-5.4966999999 $  \\  
+& $b_{62}= 2.118519953303474*10^{41}$ & $d_{62}=1$\\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+Ac\'a los t\'erminos $b_{kj}$ crecen de manera exponencial, detalle que no debe sorprendernos. 
+Como todas las ra\'ices se modifican a ritmo cuadr\'atico,
+este comportamiento es totalmente est\'andar. 
+
+Esta forma de presentar los t\'erminos, 
+m\'as que darnos una sensaci\'on de convergencia, 
+nos abruma de tal modo que despierta una ligera preocupaci\'on pues crecen sin dar señal de control.
+Ello representa una motivaci\'on extra para darle un vistazo a los coeficientes de $\hat{f}^{\circ k}$.
+
+Los $d_{kj}$ alcanzan r\'apidamente estabilidad. 
+Puesto que el polinomio $\hat{f^{\circ k}}$ es m\'onico,  
+el valor $-d_{k1}$ es la suma de ciertas ra\'ices (aquellas que no se perdieron en el proceso de iteraci\'on),
+en contraste con $29.0443$, la suma de las ra\'ices del polinomio original.
+La diferencia $29.0443-d_{k1}=23.5476000001$ debe ser entonces el valor de la ra\'iz de mayor escape. 
+Y en efecto, al reemplazar este valor en el polinomio original obtenemos una insignificancia de orden $10^{-8}$.
+
+Notemos que para que este argumento funcione debemos estar seguros de que las dem\'as ra\'ices no se desvanezcan.
+Esta ser\'a principal preocupaci\'on en el resto de la secci\'on.
+
+Nuestro primer paso ha sido ver c\'omo funciona el algoritmo en la pr\'actica. 
+Ahora expliquemos el porqu\'e.
+En primer resultado t\'ecnico ser\'a mostrar la equivalencia entre 
+tener $\phi(c_i)>1$ al menos para una ra\'iz y que los coeficientes $b_{kj}$ no sean acotados.
+
+\begin{proposition}
+Sea $p(x)$ un polinomio de grado $n$ con coeficientes reales.
+Entonces $p(x)$ tiene al menos una ra\'iz sujeta a $\phi(c_i)>1$ si y s\'olo si 
+los $b_{kj}$ no son acotados.
+\end{proposition}
+\begin{proof}
+Asumamos que $c_1$ tiene norma mayor que 1.
+Por contradicci\'on asumamos que los $b_{kj}$ est\'an acotados uniformemente por una constante $B$.
+Bajos estas condiciones la suma $|\sum_j b_{kj} \cdot c_i^j|$ es menor o igual que $|\sum_j B \cdot c_i^j |$. 
+Pero esto no es el caso para los iterados de $c_1$: 
+divergen en norma a $\infty$ y no pueden estar acotados.
+
+Rec\'iprocamente, asumamos que todas las ra\'ices son, en norma, menores o iguales a 1. 
+De ser as\'i, se cumplir\'a persistentemente $|f^{\circ k}(c_i)|=|\sum_j b_{kj} \cdot c_i^j| \le 1$. 
+Por el absurdo, supongamos que los $b_{kj}$ no est\'en acotados. 
+Para cada $k$ designemos por $j_k$ a una posici\'on con la cual se tenga $|b_{kj}| \le |b_{kj_k}|$. 
+Como los $b_{jk}$ no son acotados, pasamos a subsecuencias para asumir
+$|b_{k_\ell j}| \le |b_{k_\ell j_0}| \to \infty$, con un \'indice $j_0$ fijo. 
+Tras refinar, incluso se puede asumir la convergencia $b_{k_\ell j}/b_{k_\ell j_0} \to \beta_j$ 
+donde $|\beta_j| \le 1$ pero $\beta_{j_0}=1$. 
+De este modo el polinomio $T(x)=\sum_{j=0}^{d-1} \beta_j x^j$ ser\'a no nulo y tendr\'a grado menor o igual a $n-1$. 
+No obstante, todos los $c_i$ (y son $n$ en total) son ra\'ices de $T$: 
+en efecto, todo lo dicho anteriormente desemboca en  
+$$
+|T(c_i)|=\lim |f^{\circ k_\ell}(c_i)|/|\beta_{k_\ell j_0} \le \lim 1//|\beta_{k_\ell j_0} |=0. 
+$$
+Esto est\'a mal ya que un polinomio de grado $n-1$ tiene a lo mucho $n-1$ ra\'ices. 
+\end{proof}
+\medskip
+
+Obs\'ervese que en la pr\'actica hacemos un supuesto fuerte
+al afirmar que tras iterar el polinomio $\hat{f}^{\circ k}$ mantiene todas las ra\'ices 
+---excepto la liebre (con cierto margen en la aproximaci\'on)---. 
+¿C\'omo es esto posible y c\'omo es ello rentable?
+
+Introducimos un polinomio auxiliar $F^{[k]}$ como $f^{\circ k}/w_k$, donde $w_k=\hbox{m\'ax}_j{|b_{kj}|}$. 
+Es decir, todos los coeficientes de $F^{[k]}$ son menores o iguales a 1 en norma.
+En realidad $f^{\circ k}(x)$, $\hat{f}^{\circ k}(x)$ y $F^{[k]}(x)$ 
+son m\'ultiplos uno de otro, por lo que comparten las mismas ra\'ices.
+Por ello, su aparici\'on tendr\'a en muchos casos apenas un efecto argumentativo. 
+
+Para cada una de las ra\'ices de $p(x)$ 
+se tiene 
+$$
+|F^{[k]}(c_i)|=\left |\sum_{0 \le j \le n-1}\frac{b_{kj}}{w_k}c_i^j \right|\leq\sum|c_i^j|,
+$$
+por lo que resultan acotados (independiente de $k$ e $i$)
+digamos por una constante $Q$.
+
+\begin{proposition}
+Sea $c_1$ una ra\'iz liebre de $p(x)$ y 
+$c_i$ una ra\'iz que no lo es. 
+Entonces $c_i$ es ra\'iz (aproximada) de $\lim F^{[k]}(x)$.
+\end{proposition}
+\begin{proof}
+Por hip\'otesis $\phi(c_1)$ es mayor que $\phi(c_i)$.
+Merced al teorema 2.3
+para cierto $\lambda<1$ se tiene $|f^{\circ k}(c_i)|  \le \lambda^{2^k} |{f^{\circ k}(c_1)}|$,  
+para cualquier $k$. 
+Al dividir entre $|w_k|$ obtenemos 
+$$
+|F^{[k]}(c_i)|  \le \lambda^{2^k} |{F^{[k]}(c_1)}| \le \lambda^{2^k} Q \to 0, 
+$$
+lo que establece el resultado. 
+\end{proof}
+
+Una consecuencia inmediata es que el m\'etodo resulta infalible en tanto exista una \'unica ra\'iz liebre. 
+Es m\'as, nada impide, una vez encontrado un factor, volver a aplicar el mismo algoritmo. 
+
+La proposici\'on 3.1 no solo funciona cuando existe una ra\'iz liebre, sino cuando son varias. 
+La principal dificultad radica en que no podemos concluir nada contundente acerca del grado de $F^{[k]}$; 
+ello lo discutiremos en secciones posteriores.
+
+Otra cuesti\'on importante es el tema de la velocidad de convergencia. 
+Tal como se\~nala la prueba, \'esta depende de dos ingredientes, de $Q$ y de $\lambda$.
+Por un lado, $Q$ depende del grado del polinomio y de la magnitud de la ra\'iz l\'ider, 
+mientras $\lambda$ es el radio entre dos ra\'ices. 
+No obstante, una vez que sabemos que ella es menor que $1$, 
+la magnitud $\lambda^{2^k}$ decrece exponencialmente. 
+Es por ello que para gran parte de las aplicaciones necesitaremos un n\'umero pequeño de iteraciones.
+\medskip
+
+\section{Todas las ra\'ices dentro del disco unitario}
+
+Existe un problema con lo discutido hasta ahora.  
+Si arrancamos la iteraci\'on con ra\'ices dentro del disco unitario, 
+por m\'as que iteremos, los coeficientes no crecer\'an. 
+Y el polinomio iterado no ayudar\'a en nada a factorizar el polinomio original. 
+Ac\'a ya no estamos hablando de la no unicidad de ra\'ices liebre sino de su no existencia:  
+este fen\'omeno es exclusivo de cuando las ra\'ices caen dentro de $\overline{\mathbb{D}}$ 
+pues, recu\'erdese, apenas haya una ra\'iz fuera, por lo visto en la secci\'on anterior,
+los t\'erminos se disparan a infinito.
+
+Aparece entonces cierta duda de c\'omo detectar cu\'ando estamos en este caso. 
+¿C\'omo poder distinguir entre coeficientes que no crecen y coeficientes que crecen a paso lento? 
+Obs\'ervese que ello es una situaci\'on no del todo disparatada: 
+es muy dif\'icil decidir a ciencia cierta si un punto pertenece a compacto o si solo est\'a muy cerca de \'el. 
+La respuesta tajente, en este caso, es que no nos importa diferenciar esos dos casos: lo recusamos. 
+O bien el m\'etodo no funciona, o, en su defecto, demorar\'a tanto que no otorgar\'a beneficios. 
+Y en ning\'un caso nos conviene utilizarlo. 
+
+Tras esta discusi\'on, 
+cuando veamos que los coeficientes del polinomio luego de un n\'umero razonable de iteraciones 
+(por ejemplo, $10$ de ellas) 
+permanecen acotados 
+(la constante la decide el usuario y puede cambiar de acuerdo con la aplicaci\'on: 
+nosotros tomaremos $3+d$, donde $d$ es el grado),  
+entonces las ra\'ices se encuentran  cerca o dentro del disco unitario, y abortamos.
+
+Para continuar adelante y lograr el objetivo trazado (es decir encontrar al menos una ra\'iz), 
+desplazamos todas las ra\'ices una cantidad $k$ en el eje $X$ (por ejemplo $3$ unidades reales).
+Esto es sencillo de lograr en un ordenador: se eval\'ua $p(x-k)$. 
+Como ahora con certeza todas las ra\'ices est\'an lejos del disco unitario, 
+ya que en principio todas arrojaban parte real entre -1 y 1, al moverla 3 unidades escapan del disco.
+Con ello volvemos a recobrar la fe en nuestro algoritmo, y de tener \'exito, 
+le sumamos a las ra\'ices as\'i obtenidas la cantidad $k$ desplazada. 
+
+Veamos esto en marcha. 
+Consideremos el polinomio  $p(x)=x^3+1.176x^2+0.05521959x-0.1681968153$. 
+Este polinomio tiene ra\'ices $-0.579$, $0.318$ y $-0.915$, 
+todas dentro del disco unitario. 
+El proceso de iteraci\'on entrega los valores consignados en la siguiente tabla. 
+En este caso mostramos exclusivamente los $f^{\circ k}(x)$ 
+dado que tendremos iterados acotados (ver proposici\'on 3.1).
+
+\begin{center}
+\begin{tabular}{ | c | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$ \\
+ \hline 
+& $b_{1,0}= 0$ \\
+1 & $b_{1,1}= 1$   \\ 
+& $b_{1,2}= 0$ \\  
+ \hline 
+& $b_{2,0}= 0$ \\
+2 & $b_{2,1}= 0$ \\ 
+& $b_{2,2}= 1$\\
+\hline
+& $b_{3,0}= -0.1977994547928$ \\
+3 & $b_{3,1}= 0.23313505314$ \\ 
+& $b_{3,2}= 1.32775641$ \\
+\hline
+& $b_{4,0}= -0.20545387822885036$ \\
+4 & $b_{4,1}= 0.2845883896304756$   \\ 
+& $b_{4,2}= 1.1417904671642711$ \\
+\hline
+& $b_{5,0}= -0.10634912856198096$ \\
+5 & $b_{5,1}= 0.15110906341730285$  \\ 
+& $b_{5,2}= 0.5785371229930102$ \\
+\hline
+& $b_{6,0}= -0.025486097263225455$ \\
+6 & $b_{6,1}= 0.036236044396915044$ \\ 
+& $b_{6,2}= 0.13857006862130614$ \\
+\hline
+& $b_{7,0}= -0.0014594273207892132$ \\
+7 & $b_{7,1}= 0.002075009582212664$  \\ 
+& $b_{7,2}= 0.007935027084502593$ \\
+\hline
+& $b_{8,0}= -4.7856386320795905*10^{-6}$ \\
+8 & $b_{8,1}= 6.80420729221665*10^{-6}$  \\ 
+& $b_{8,2}= 2.601991316816804*10^{-5}$ \\
+\hline
+& $b_{9,0}= -5.1458220130117115*10^{-11}$ \\
+9 & $b_{9,1}= 7.316314990998036*10^{-11}$  \\ 
+& $b_{9,2}= 2.797826000899468*10^{-10}$ \\
+\hline
+& $b_{10,0}= -5.9495549271149536e*10^{-21}$ \\
+10 & $b_{10,1}= 8.459060144900177*10^{-21}$  \\ 
+& $b_{10,2}= 3.2348222357421576*10^{-20}$\\
+\hline
+\end{tabular}
+\end{center}
+
+Observamos que nuestros esfuerzos por intentar factorizar este polinomio son infructuosos.
+Puesto que los t\'erminos son acotados, concluimos (incluso sin conocer las ra\'ices) 
+que debemos realizar un desplazamiento en el eje $x$.
+
+Por lo tanto, en lugar de usar el polinomio original, usaremos $\tilde{p}(x)=p(x-3)$. 
+
+\begin{center}
+\begin{tabular}{ | c | l | l| }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$& $\hat{f}^{\circ k}(x)$ \\
+ \hline 
+& $b_{1,0}= 0$ & $d_{10}=0$\\
+1 & $b_{1,1}= 1$  & $d_{11}=1$\\ 
+& $b_{1,2}= 0$ & $d_{12}=0$\\  
+ \hline 
+& $b_{2,0}= 0$& $d_{20}=0$ \\
+2 & $b_{2,1}= 0$ & $d_{21}=0$\\ 
+& $b_{2,2}= 1$& $d_{22}=1$\\
+\hline
+& $b_{3,0}= 382.4289568510272$ & $d_{30}=5.5073487671$\\
+3 & $b_{3,1}= 309.53430859314$ & $d_{31}=4.4575949657$\\ 
+& $b_{3,2}= 69.43975641$ & $d_{32}=1$\\
+\hline
+& $b_{4,0}= 374727.4490651815$ & $d_{40}=8.0921425594$\\
+4 & $b_{4,1}= 262914.7661931612$   & $d_{41}=5.6775765275$\\ 
+& $b_{4,2}= 46307.568893401476$ & $d_{42}=1$\\
+\hline
+& $b_{5,0}= 45393487071.0396$ & $d_{50}=9.1682903611$\\
+5 & $b_{5,1}= 30200972710.011127$  & $d_{51}=6.099802083$\\ 
+& $b_{5,2}= 4951139774.518314$ & $d_{52}=1$\\
+\hline
+& $b_{6,0}= 1.9629524111953163*10^{20}$ & $d_{60}=9.5242813478$\\
+6 & $b_{6,1}= 1.2846314870558407*10^{20}$ & $d_{61}=6.2330556977$\\ 
+& $b_{6,2}= 2.0609979267957367*10^{19}$ & $d_{62}=1$\\
+\hline
+\end{tabular}
+\end{center}
+
+Al hacer la comparaci\'on con $\tilde{p}(x)=x^3+10.176x^2+34.11121959x+37.5814619547$,
+de todo lo aprendido a lo largo de este cap\'itulo se concluye que la primera ra\'iz es $10.176-6.2614951688=3.942945$. 
+No obstante, a esta hay que sustraerle las $3$ unidades ``prestadas'' 
+a fin de recuperar en $0.942944$ una 
+aproximaci\'on aceptable a una ra\'iz del polinomio $p$, el objeto de inter\'es y estudio.
+Notemos adem\'as que esta es la ra\'iz ``m\'as expuesta'' al desplazar tres unidades.
+
+Como nota final recordemos el protagonismo de este paso en el contexto general. 
+El algoritmo pretende extraer las ra\'ices, de una en una,  con los $\phi(c_i)$ mayores que $1$, 
+y poco a poco las ra\'ices faltantes est\'an cada vez m\'as cercanas a $\overline{\mathbb{D}}$.
+En fin, este paso se circunscribe exclusivamente a cuando todas las ra\'ices caen dentro (o cerca) del disco.
+Por tanto, cuando se haga indispensable este desplazamiento, 
+no habr\'a ra\'ices que pretendan filtrarse en este nuestro disco problem\'atico.  
+\medskip
+
+\section{Ra\'ices conjugadas}
+
+Ahora digamos que no hay una ra\'iz l\'ider, sino $2$. 
+En el caso real esto puede suceder gen\'ericamente si el polinomio tiene ra\'ices conjugadas.
+Al aplicar el m\'etodo explicado en la secci\'on 3.1 y 
+reemplazar la supuesta ra\'iz en el polinomio original, 
+no obtendremos el resultado deseado.
+En realidad, muchas veces incluso no habr\'a convergencia pese a que los coeficientes 
+crezcan desmesuradamente. 
+
+Veamos un ejemplo. 
+Tomemos $p(x) = x^4+2x^3+11x^2-2x+33$ y arranquemos con las iteraciones.
+ 
+\begin{center}
+\begin{tabular}{ |c | l | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$ & $\hat{f}^{\circ k}(x)$\\
+ \hline 
+& $b_{10}= 0$ & $d_{10}= 0 $\\
+1 & $b_{11}= 1$ &$d_{11}=1 $  \\ 
+& $b_{12}= 0$ & $d_{12}=0$\\  
+ \hline 
+& $b_{20}= 0$ & $d_{20}= 0 $\\
+2 & $b_{21}= 0$ & $d_{21}=0 $  \\ 
+& $b_{22}= 1$ & $d_{22}=1$\\
+\hline
+& $b_{30}= -33$ & $d_{30}= 16.5$\\
+& $b_{30}= 2$ & $d_{31}= -1$\\
+3 & $b_{31}= -11$ & $d_{32}=5.5$  \\ 
+& $b_{32}= -2$ & $d_{33}=1$\\
+\hline
+& $b_{40}= 1188$ & $d_{40}= -4.0408163265$\\
+& $b_{41}= -1326$ & $d_{41}= 4.5102040816$\\
+4 & $b_{42}= 703$ & $d_{42}=-2.3911564626$  \\ 
+& $b_{43}= -294$ & $d_{43}=1$\\
+\hline
+& $b_{50}= -47942565$ & $d_{50}=-44.9143497136$\\
+& $b_{51}= 19186358$ & $d_{51}=17.9744824446$\\
+5 & $b_{52}= -17047559$ & $d_{52}=-15.9707772559$  \\ 
+& $b_{53}= 1067422$ & $d_{53}=1$\\
+\hline
+& $b_{60}= -1.0782419372366796*10^{16}$ & $d_{60}=9.6132949282$\\
+& $b_{61}= 229293657627546$ & $d_{61}=-0.2044316289$\\
+6 & $b_{62}= -2472524404136873$ & $d_{62}=2.2044316302$  \\ 
+& $b_{63}= -1121615372556606$ & $d_{63}=1$\\
+\hline
+& $b_{70}= 5.881610454899393*10^{32}$ & $d_{70}=28.2291331552$\\
+& $b_{71}= -1.335479319449419*10^{32}$ & $d_{71}=-6.4097110517$\\
+7 & $b_{72}= 1.752184318683005*10^{32}$ & $d_{72}=8.4097110517$  \\ 
+& $b_{73}= 2.083524996167929*10^{31}$ & $d_{73}=1$\\
+\hline
+& $b_{80}= 9.860313481883566*10^{64}$ & $d_{80}=-0.9199931335$\\
+& $b_{81}= -3.5440207277862266*10^{65}$ & $d_{81}=3.3066643778$\\
+8 & $b_{82}=1.4004583199705992*10^{65}$ & $d_{82}=-1.3066643778$  \\ 
+& $b_{83}= -1.0717812039078138*10^{65}$ & $d_{83}=1$\\
+\hline
+
+\end{tabular}
+\end{center}
+\bigskip
+
+Al haber un par de ra\'ices que se escapan a infinito, 
+deber\'iamos observar polinomios residuales de grado $2=n-2$ y no de grado $3$ como aparece en la tabla. 
+Los valores tabulados sugieren que de una manera u otra se filtran falsas ra\'ices.  
+Estos polinomios, del grado incorrecto, son estructuralmente distintos uno del otro y por consiguiente 
+sus ra\'ices no pueden ser todas iguales. 
+En efecto, en cada paso dos son recurrentes, lo que convierte a la tercera en espor\'adica. 
+Hemos desembocado en una situaci\'on similar a la descrita a continuaci\'on. 
+
+\begin{lemma}
+Sean $U,V$ polinomios m\'onicos distintos de grado $r+1$. 
+Si $U,V$ comparten un factor com\'un de grado $r$, entonces \'este es un m\'ultiplo de $U-V$. 
+\end{lemma}
+\begin{proof}
+Sea $R(x)$ el divisor c\'omun de $U,V$ de grado $r$. 
+En $\mathbb C$ toda ra\'iz de $R$ es cero de $U(x)-V(x)$ y por tanto, 
+al ser del mismo grado son uno m\'ultiplo del otro. 
+\end{proof}
+
+En nuestro caso, para deshacernos de la ra\'iz intrusa 
+tomamos la diferencia entre las dos \'ultimas iteraciones.
+Con ello obtenemos $q(x)=-9.7163754295x^2+9.7163754295x-29.149$.
+Al normalizar, obtenemos el polinomio $\hat{q}(x)=x^2-x+2.915$.
+
+Demos un paso atr\'as para reparar en qu\'e hemos obtenido.
+Este \'ultimo polinomio es lo que nos queda despu\'es del proceso de iteraci\'on.
+Hemos de recuperar las ra\'ices que hemos perdido en primer lugar.
+Para ello, debemos dividir el polinomio original con $\hat{q}(x)$.
+Esto nos da $x^2+3x+11$ aproximadamente. 
+De este polinomio podemos recuperar las ra\'ices complejas conjugadas perdidas.
+Al hacer el c\'alculo obtenemos $-1.5+2.958i$ y $-1.5-2.958i$.
+
+
+\section{Factorizaci\'on completa}
+
+Finalmente mostraremos un ejemplo en el que se unifican las secciones previas. 
+Mostraremos c\'omo se utiliza el algoritmo para factorizar un polinomio en su totalidad.
+Analizaremos el polinomio $p(x)= x^4-3.5x^3-1.5x^2-2.5x+2$.
+
+Procedemos mec\'anicamente y 
+conseguimos una potencial ra\'iz al restar los t\'erminos $d_{62}-a_{n-1}$, esto arroja $4$.
+Y, efectivamente, al reemplazar este n\'umero en el polinomio original comprobamos que es ra\'iz.
+
+\begin{center}
+\begin{tabular}{ |c | l | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$ & $\hat{f}^{\circ k}(x)$\\
+ \hline 
+& $b_{10}= 0$ & $d_{10}= 0 $\\
+1 & $b_{11}= 1$ &$d_{11}=1 $  \\ 
+& $b_{12}= 0$ & $d_{12}=0$\\  
+ \hline 
+& $b_{20}= 0$ & $d_{20}= 0 $\\
+2 & $b_{21}= 0$ & $d_{21}=0 $  \\ 
+& $b_{22}= 1$ & $d_{22}=1$\\
+\hline
+& $b_{30}= -2$ & $d_{30}= -0.5714285714$\\
+& $b_{30}= 2.5$ & $d_{31}= 0.7142857143$\\
+3 & $b_{31}= 1.5$ & $d_{32}=0.4285714286$  \\ 
+& $b_{32}= 3.5$ & $d_{33}=1$\\
+\hline
+& $b_{40}= -445.875$ & $d_{40}= -0.5001577453$\\
+& $b_{41}= 445.59375$ & $d_{41}= 0.4998422547$\\
+4 & $b_{42}= 446.59375$ & $d_{42}=0.500963999$  \\ 
+& $b_{43}= 891.46875$ & $d_{43}=1$\\
+\hline
+& $b_{50}= -29217464.89794922$ & $d_{50}=-0.5000000049$\\
+& $b_{51}= 29217465.326538086$ & $d_{51}=0.5000000122$\\
+5 & $b_{52}= 29217464.326538086$ & $d_{52}=0.4999999951$  \\ 
+& $b_{53}= 58434929.224487305$ & $d_{53}=1$\\
+\hline
+& $b_{60}= -1.2548805492319422*10^{17}$ & $d_{60}=-0.5$\\
+& $b_{61}= 1.2548805492319422*10^{17}$ & $d_{61}=0.5$\\
+6 & $b_{62}= 1.2548805492319422*10^{17}$ & $d_{62}=0.5$  \\ 
+& $b_{63}= 2.5097610984638845*10^{17}$ & $d_{63}=1$\\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+Con esto obtenemos un factor. 
+L\'ogicamente, proseguimos con $\hat{f}^{\circ k}(x)$, pues ---por construcci\'on--- 
+este incluye todas las ra\'ices restantes de $p(x)$. 
+
+En t\'erminos algor\'itmicos, nuestro nuevo $p(x)$ pasa a ser $x^3+0.5x^2+0.5x-0.5$ 
+al que sometemos a la misma rutina. 
+A ver inspeccionr unos  cuantos valores de $f^{\circ k}(x)$, 
+comprobamos que estos est\'an acotados.
+
+\begin{center}
+\begin{tabular}{ |c | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$\\
+ \hline 
+& $b_{10}= 0$ \\
+1 & $b_{11}= 1$   \\ 
+& $b_{12}= 0$ \\  
+ \hline 
+& $b_{20}= 0$ \\
+2 & $b_{21}= 0$ \\ 
+& $b_{22}= 1$ \\
+\hline
+& $b_{30}= -0.25$ \\
+3 & $b_{31}= 0.75$ \\ 
+& $b_{32}= -0.25$\\
+\hline
+& $b_{40}= -0.140625$ \\
+4 & $b_{42}= -0.140625$  \\ 
+& $b_{41}= 0.859375$ \\
+\hline
+& $b_{50}= -0.28570556640625$ \\
+5 & $b_{52}= 0.71429443359375$   \\ 
+& $b_{51}= -0.28570556640625$ \\
+\hline
+& $b_{60}= -0.14285714272409678$ \\
+6 & $b_{62}= -0.14285714272409678$  \\
+& $b_{61}= 0.8571428572759032$ \\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+Con observar los t\'erminos $f^{\circ k}(x)$, 
+intuimos que hemos aterrizado en el caso 2, es decir, cuando todas las ra\'ices se ubican en $\overline{\mathbb{D}}$. 
+Desplazamos entonces, con lo que obtenemos $\tilde{p}(x)=p(x-3)=x^3+9.5x^2+30.5x+32.5$.
+Procedemos nuevamente a iterar.
+
+\begin{center}
+\begin{tabular}{ |c | l | l | }
+\hline
+ Cantidad de iteraciones & $f^{\circ k}(x)$ & $\hat{f}^{\circ k}(x)$\\
+ \hline 
+& $b_{10}= 0$ & $d_{10}= 0 $\\
+1 & $b_{11}= 1$ &$d_{11}=1 $  \\ 
+& $b_{12}= 0$ & $d_{12}=0$\\  
+ \hline 
+& $b_{20}= 0$ & $d_{20}= 0 $\\
+2 & $b_{21}= 0$ & $d_{21}=0 $  \\ 
+& $b_{22}= 1$ & $d_{22}=1$\\
+\hline
+& $b_{30}= 308.75$ & $d_{30}= 5.1673640167$\\
+3 & $b_{30}= 257.25$ & $d_{31}= 4.3054393305$\\
+& $b_{31}= 59.75$ & $d_{32}=1$  \\ 
+\hline
+& $b_{40}= 198488.671875$ & $d_{40}= 8.1543790886$\\
+4 & $b_{41}= 139638.515625$ & $d_{41}= 5.7366769651$\\
+& $b_{42}= 24341.359375$ & $d_{42}=1$  \\ 
+\hline
+& $b_{50}= -29217464.89794922$ & $d_{50}=-82.3941080272$\\
+5 & $b_{51}= 29217465.326538086$ & $d_{51}=-30.40276324392$\\
+& $b_{52}= -16970173.750549316$ & $d_{52}=1$  \\ 
+\hline
+& $b_{60}= 2.6131111715699953*10^{18}$ & $d_{60}=6.4954140615$\\
+6 & $b_{61}= 2.0509946459643607*10^{18}$ & $d_{61}=5.0981602346$\\
+& $b_{62}= 4.02300938296283*10^{17}$ & $d_{62}=1$  \\ 
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+Al pretender recuperar una ra\'iz logramos $5.0981602346-9.5=-4.4018397$. 
+\'Este candidato no solamente no resuelve ninguno de los problemas iniciales sino que, peor, 
+al ser trasladado las tres unidades de rigor hacia la izquierda, no cae en disco unitario. 
+Ac\'a hay por tanto m\'as de una ra\'iz liebre y debemos buscar un factor cuadr\'atico. 
+As\'i que tomamos la diferencia de dos t\'erminos consecutivos 
+para as\'i obtener $q(x)=35.50092347852x+88.8895220887$.
+Notemos que este polinomio es el residuo que nos queda de iterar.
+Primero veamos que raices perdimos en la iteraci\'on. 
+Para esto, efectuemos $\tilde{p}(x)/\tilde{q}(x)=x^2+7x+13$. 
+De aqu\'i obtenemos las ra\'ices complejas conjugadas $(-7+1.732i)/2$ y $(-7-1.732i)/2$. 
+A estas hay que sumarle $3$ para terminar el c\'alculo, lo cual arroja $(-1+1.732i)/2$ y $(-1-1.732i)/2$.
+
+Volviendo al polinomio residuo.
+El polinomio $q(x)$ al ser normalizado nos entrega $\tilde{q}(x)=x+2.503865065$. 
+La ra\'iz de este polinomio es $-2.5$ aproximadamente, que al devolver la traslaci\'on arroja $0.5$. 
+Con ello obtenemos una ra\'iz dentro del disco.
+Finalmente, hemos conseguido la  factorizaci\'on completa del polinomio $p(x)$.
+\bigskip
+
+\chapter{El pseudo-c\'odigo}
+
+Ahora nos centramos en reproducir a modo de pseudoc\'odigo lo planteado anteriormente.
+
+Durante este cap\'itulo aludimos a los algoritmos mediante cierta 
+convenci\'on para facilitar su puesta en contexto. 
+Por ejemplo, en ``eliminarCoeficientePrincipal(q)''  
+empezamos con min\'uscula y cambiamos a may\'uscula para separar palabras. 
+De este modo confiamos quede clara su funci\'on. 
+Los par\'entesis denotan sobre qui\'en se aplica el algoritmo.
+
+\section{Polinomios m\'odulo p(x)}
+
+La idea para reducir un polinomio modulo $p(x)$ algor\'itmicamente es la siguiente.
+Primero consideremos un polinomio m\'onico $p(x) = x^n+a_{n-1}x^{n-1}+\dots+a_1x+a_0$ que genera un ideal principal. 
+y un polinomio $q(x) = b_m x^m + b_{m-1}x^{m-1}+\dots+b_1x+b_0$ que queremos reducir.
+
+Si el grado de $q(x)$ es menor al de $p(x)$ no es necesario hacer nada. 
+En caso contrario, la relaci\'on $p(x) \equiv 0$, permite escribir $x^n = -(a_{n-1}x^{n-1}+\dots+a_1x+a_0)$.
+De este modo, v\'ia el reemplazo $b_mx^m = -b_mx^{m-n}*(a_{n-1}x^{n-1}+\dots+a_1x+a_0)$ 
+hemos reducido el grado de $q(x)$ en al menos $1$.
+
+Evidentemente, basta aplicar este procedimiento sucesivas veces hasta lograr un grado menor que el de $p$. 
+Escribamos esto de manera algor\'itmica.
+
+\begin{algorithm}[H]
+ \caption{Reducci\'on m\'odulo p(x)}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{reduccionModulo}{reduccionModulo}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\reduccionModulo{polinomio q, polinomio p}}{
+	n = grado(p)\;
+     \While{grado(q) $\geq$ n}{
+     	m = grado(q)\;
+		coeficientePrincipal = extraerCoeficientePrincipal(q)\;
+		q = eliminarCoeficientePrincipal(q)\;
+		coef= coeficientePrincipal*polinomio(grado: m-n)*eliminarCoeficientePrincipal(p)\;
+		q = q - coef\;
+     }
+  \Return q
+}
+\end{algorithm}
+
+\section{Iteraci\'on de un polinomio}
+Recordemos que empezamos con el polinomio $x$, y este lo iteramos en el proceso $x\mapsto x^2$. 
+Luego de realizar una iteraci\'on, basta usar el algoritmo de la secci\'on anterior para tener un polinomio m\'odulo $p(x)$.
+
+\begin{algorithm}[H]
+ \caption{Iteraci\'on m\'odulo p(x)}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{iteracionPolinomio}{iteracionPolinomio}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\iteracionPolinomio{entero cantidadIteraciones, polinomio p}}{
+  q = polinomio(grado:1)\;
+	cantidadActual = 0\;
+     \While{cantidadActual$<$cantidadIteraciones}{
+     	q = q$^2$\;
+     	q = reduccionModulo(q,p)\;
+     	cantidadActual = cantidadActual + 1\;
+     }
+  \Return q
+}
+\end{algorithm}
+
+\section{Traslaci\'on del polinomio}
+
+El proceso de traslaci\'on se reduce a elevar monomios a una potencia y agrupar t\'erminos por grados.
+Si tenemos $p(x)=a_nx^n+a_{n-1}x^{n-1}+\dots+a_1x+a_0$,
+es suficiente con reemplazar $p(x-3)=a_n(x-3)^{n}+a_{n-1}(x-3)^{n-1}+\dots+a_1(x-3)+a_0$. 
+
+
+\begin{algorithm}[H]
+ \caption{Traslaci\'on del polin\'omio p(x)}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{traslacionPolinomio}{traslacionPolinomio}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\traslacionPolinomio{polinomio p}}{
+    auxiliar $ = $ polinomio(grado$ : 1) - 3$\;
+	p1 = 0\;
+	
+	 \While{grado(p)$\geq $0}{
+		p1 $=$ p1 $+$ extraerCoeficientePrincial(p) $*$ auxiliar$^{grado(p)} $\;
+		p = eliminarCoeficientePrincipal(p)\; 
+		}
+  \Return p1
+}
+\end{algorithm}
+
+\section{Recuperaci\'on de la ra\'iz perdida}
+
+Notemos que este caso se divide en dos. 
+Ya que podemos recuperar  ra\'ices reales o ra\'ices complejas.
+
+Primero veamos la situaci\'on real. 
+Consideremos el polinomio $p(x)=x^n+a_{n-1}x^{n-1}+\dots+a_0$ y 
+el polinomio iterado normalizado $q(x)=x^{n-1}+b_{n-2}x^{n-2}+\dots+b_0$. 
+Para hallar la ra\'iz perdida basta considerar $b_{n-2}-a_{n-1}$.
+
+\begin{algorithm}[H]
+ \caption{Recuperaci\'on de la ra\'iz perdida de $p(x)$}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{recuperarRaiz}{recuperarRaiz}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\recuperarRaiz{polinomio iterado, polinomio p}}{
+  	iterado = Normalizar(iterado)\;
+  	iterado = eliminarCoeficientePrincipal(iterado)\;
+  	p = eliminarCoeficientePrincipal(p)\;
+  \Return extraerCoeficientePrincipal(iterado) - extraerCoeficientePrincipal(p)
+}
+\medskip
+
+\end{algorithm}
+\bigskip
+
+Ahora consideremos el caso complejo.
+Recordemos como lidiar con este caso.
+Digamos que el iterado tras diversos pasos  queda normalizado  cual 
+$q_1=x^{n-1}+b_{1,n-2}x^{n-2}+\dots+b_{1,0}$, 
+pero que en una instancia anterior es $q_2=x^{n-1}+b_{2,n-2}x^{n-2}+\dots+b_{2,0}$.
+De acuerdo con el lema 3.3 el factor buscado es $q=q_1-q_2$. 
+
+Es posible que nos quede el polinomio $0$ (en caso la iteraci\'on converja), 
+en cuyo caso consideramos el m\'aximo com\'un divisor entre el polinomio iterado y $p(x)$
+
+\begin{algorithm}[H]
+ \caption{Recuperaci\'on de la ra\'iz perdida de $p(x)$}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{recuperarRaizCompleja}{recuperarRaizCompleja}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\recuperarRaizCompleja{polinomio iterado, polinomio p}}{
+  	q1= Normalizar(iterado)\;
+	q2 = iteracionPolinomio(9,p)\;
+	q2 = Normalizar(q2)\;
+	q = q1-q2\;
+	\uIf{q=0}{
+		\tcp{La iteraci\'on converge, debemos usar gcd}
+		mcdPolinomio = mcd(p,q1)	\;	
+		\Return (p/mcdPolinomio,mcdPolinomio)
+	}
+	\uElse{
+		\tcp{Hemos conseguido una factorizaci\'on}
+		\Return (p/q,q)
+	}
+}
+\medskip
+\end{algorithm}
+
+\section{Extracci\'on de una ra\'iz de p(x)}
+
+Finalmente unificamos todo en nuestra rutina principal. 
+\medskip
+
+\begin{algorithm}[H]
+ \caption{Extracci\'on de una ra\'iz de $p(x)$}
+ 
+  \SetAlgoLined\DontPrintSemicolon
+  \SetKwFunction{extraccionRaiz}{extraccionRaiz}
+  \SetKwProg{myalg}{Algoritmo}{}{}
+  \myalg{\extraccionRaiz{polinomio p}}{
+    iteracion $ = $ iteracionPolinomio(10,p)\;
+    \uIf{(terminosAcotados(iteracion))}{
+    	\tcp{Necesitamos una traslaci\'on}
+		p = traslacionPolinomio(p)\;
+    	\Return extraccionRaiz(p)    
+    }\uElse{
+    	c1 = recuperarRaiz(iteracion,p)\;
+    	\uIf{esRaiz(c1,p)}{
+    		\tcp{Hemos encontrado una raiz}
+    		\Return (c1,normalizar(iteracion))
+    	}\uElse{
+			\tcp{Multiplicidad en equipotencial}
+			\Return RecuperarRaizCompleja(iteracion,p)
+    	}
+    }
+  \Return p1
+}
+\medskip
+
+\end{algorithm}
+
+
+\chapter{Limitaciones del m\'etodo}
+
+En este cap\'itulo nos centraremos en discutir potenciales problemas en el algoritmo durante su ejecuci\'on, 
+as\'i como posibles generalizaciones.
+\medskip
+
+\section{Multiplicidad en el mismo equipotencial}
+
+Recordemos en palabras coloquiales lo que enuncia la proposici\'on 3.2. 
+El polinomio iterado mantiene las ra\'ices internas, mientras que las ra\'ices en el mayor equipotencial ---usualmente--- se pierden.
+En esta secci\'on ejemplificaremos c\'omo la coexistencia 
+de m\'ultiples ra\'ices en el equipotencial dominante puede llegar a ser un problema.
+
+El caso por defecto de esta situaci\'on ya lo hemos trabajado en el cap\'itulo 3. 
+Nos referimos a las ra\'ices conjugadas. 
+Esta situaci\'on, por lo que se vi\'o, siempre es manejable (ya sea mediante diferencia de polinomios o 
+v\'ia el m\'aximo com\'un divisor). 
+Sin embargo, es preciso recurrir al m\'aximo com\'un divisor, 
+ya que si el polinomio iterado converge, podr\'ian estarse filtrando ra\'ices indeseadas.
+
+Otra instancia del mismo fen\'omeno ocurre cuando tenemos multiplicidad de ra\'ices. 
+En este caso, el algoritmo podr\'ia converger o no.
+Un caso m\'as extremo que el anterior sucede cuando tenemos m\'ultiples ra\'ices $c_1$, $c_2$, ... $c_r$ de $p(x)$ tal que la norma de ellas es la misma.
+De igual manera que en lo discutido previamente, 
+mientras no sean liebres, no generan ning\'un problema.
+Pero apenas lo son, no hemos presentado un an\'alisis de c\'omo eludir complicaciones.
+Esto ser\'a discutido en la tesis de licenciatura.
+
+\section{Coeficientes complejos}
+
+Por ahora, hemos asumido que los polinomios $p(x)$ tienen coeficientes reales.
+Notemos que la generalizaci\'on a coeficientes complejos mantiene la mayor\'ia de propiedades que se cumplen con los reales. 
+Esto debido a que en la mayor\'ia de situaciones \'unicamente nos preocupamos de la norma de nuestros coeficientes y no en propiedades exclusivas de $\mathbb{R}$.
+
+Sin embargo, hay ligeras diferencias. 
+Por ejemplo, que la ra\'iz liebre no sea real no significa necesariamente que tenemos un par conjugado de liebres. Esta propiedad surgi\'o de los coeficientes reales.
+En el caso general de un polinomio con coeficientes complejos $q(z)$, las ra\'ices no necesariamente son conjugadas. 
+Evidentemente, ser\'a necesario un an\'alisis m\'as profundo. 
+
+\section{Toma de decisiones}
+Durante el algoritmo mostrado se ha necesitado tomar m\'ultiples decisiones respecto a los par\'ametros del algoritmo.
+Por ejemplo, la cantidad de iteraciones, una cota para diferenciar ra\'ices del disco, etc\'etera.
+
+Estos par\'ametros deben ser ajustados de acuerdo con las caracter\'isticas del polinomio en cuesti\'on 
+y las propiedades del algoritmo.
+Por ejemplo, hemos visto que debido al comportamiento cuadr\'atico de la iteraci\'on, 
+es suficiente con tomar $10$ iteraciones para la gran mayor\'ia de aplicaciones de polinomios c
+on ra\'ices relativamente pequeñas en polinomios de grado chico.
+Para estos ejemplos la cantidad de iteraciones nunca generar\'o problemas en cuanto a convergencia. 
+Para polinomios de mayor calado, la situaci\'on podr\'ia ser otra. 
+
+\section{Iteraciones}
+Elevar al cuadrado ha sido la base fundamental de nuestro proceso iterativo. 
+En teor\'ia, esto no genera mayor problema.
+Sin embargo, al momento de implementar este algoritmo, 
+este proceso nos puede dar errores de precisi\'on al manejar n\'umeros grandes.
+El lector debe escoger estructuras de datos que le permitan almacenar n\'umeros 
+con gran cantidad de cifras para evitar problemas computacionales.
+
+Lo est\'andar es esperar coeficientes de hasta $10^{30}$ (esto debiera estar ocurriendo entre la s\'etima y novena iteraci\'on). 
+Sin embargo, si se necesita mayor cuidado con ra\'ices cercanas entre s\'i 
+(por ejemplo, si $p(x)$ tiene m\'ultiples ra\'ices distintas cercanas al $0$), 
+se puede requerir un n\'umero mayor de iteraciones y por tanto, mayor capacidad de almacenamiento.
+
+En este sentido, operaciones b\'asicas como la suma y multiplicaci\'on dejan de ser realizadas en tiempo constante y empiezan a tener un costo computacional que depende del tamaño del n\'umero.
+
+\chapter{An\'alisis y comentarios finales}
+
+Durante el desarrollo de esta tesis se ha tomado una serie de decisiones para el beneficio de la misma;
+sin embargo, 
+estas decisiones no tienen por qu\'e ser exclusivamente de esta manera,
+veamos un ejemplo.
+
+En el caso de tener todas las ra\'ices dentro del disco unitario, 
+se tom\'o la decisi\'on de hacer una traslaci\'on en el eje real a todas las ra\'ices.
+Una alternativa a esto es primero extraer todas las ra\'ices que sean igual a $0$, 
+para luego considerar el polinomio $p(\frac{1}{x})$. 
+Este nuevo polinomio tendr\'a sus ra\'ices fuera del disco unitario.
+Este m\'etodo es v\'alido, pero tiene el defecto de trabajar con los rec\'iprocos.
+Adem\'as, computacionalmente, no es deseable trabajar con rec\'iprocos.
+
+Otro ejemplo, que motiva el tema de mi tesis de licenciatura, es incluir un factor aleatorio $c$ a la iteraci\'on. 
+Es decir, en lugar de considerar la iteraci\'on $x\mapsto x^2$ considerar $x\mapsto x^2+c$.
+Esto, como se ver\'a en dicho texto, nos permite utilizar resultados de din\'amica compleja en toda su potencia \cite{Torres}.
+
+\printbibliography
+
+
+\end{document}
